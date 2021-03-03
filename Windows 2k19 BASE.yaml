@@ -1,0 +1,47 @@
+formatVersion: 1
+inputs:
+  Memoria:
+    type: integer
+    enum:
+      - 8
+      - 4
+    description: Quantidade de memória (GB)
+    title: Memory
+  CPU:
+    type: integer
+    enum:
+      - 4
+      - 2
+    description: Quantidade de CPU
+    title: vCPU
+  Nome:
+    type: string
+    title: Name
+    description: Nome da VM
+resources:
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      image: Windows2k19_Teste
+      customizationSpec: Windows2k19_handsOn
+      name: '${input.Nome}'
+      cpuCount: '${input.CPU}'
+      totalMemoryMB: '${input.Memoria*1024}'
+      folderName: HML_WIN_Policy_Semanal_Retencao_31dias
+      networks:
+        - network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: 'net:teste'

@@ -1,0 +1,48 @@
+formatVersion: 1
+inputs:
+  nomeVM:
+    type: string
+    description: 'Parte do nome é gerado automaticamente (sudvma_mb_nomeEscolhido_###)'
+    title: Nome da VM
+  memoriaRAM:
+    type: integer
+    enum:
+      - 4
+      - 8
+    description: Especifica quantos GB deve ter a VM provisionada.
+    title: Quantidade de memória
+  qtdCPU:
+    type: integer
+    default: '2'
+    enum:
+      - 1
+      - 2
+      - 4
+      - 8
+resources:
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      newName: '${input.nomeVM}'
+      image: Windows2k19
+      customizationSpec: Windows_2k19_Dominio
+      cpuCount: '${input.qtdCPU}'
+      totalMemoryMB: '${input.memoriaRAM*1024}'
+      folderName: HML_WIN_Policy_Semanal_Retencao_31dias
+      networks:
+        - network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: 'net:teste'

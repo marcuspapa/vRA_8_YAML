@@ -1,0 +1,38 @@
+formatVersion: 1
+inputs:
+  hostname:
+    type: string
+    description: internal dns hostaneme
+    title: Enter hostname
+resources:
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      image: CentOS7.8_2
+      name: '${input.hostname}'
+      cpuCount: 1
+      totalMemoryMB: 1024
+      networks:
+        - network: '${resource.Cloud_Network_1.id}'
+          assignment: static
+      cloudConfig: |
+        runcmd:
+          - mkdir /root/TesteCloud
+          - mkdir /root/Teste2
+          - hostnamectl set-hostname ${input.hostname}
+          - sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+          - systemctl restart sshd
+  Cloud_Network_1:
+    type: Cloud.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: 'net:teste'
