@@ -2,7 +2,7 @@ formatVersion: 1
 inputs:
   nomeVM:
     type: string
-    description: 'Parte do nome é gerado automaticamente (sudvma_mb_nomeEscolhido_###)'
+    description: 'Parte do nome é gerado automaticamente (nomeEscolhido_###)'
     title: Nome da VM
   memoriaRAM:
     type: integer
@@ -32,7 +32,7 @@ resources:
       customizationSpec: Windows2k19_Teste
       cpuCount: '${input.qtdCPU}'
       totalMemoryMB: '${input.memoriaRAM*1024}'
-      folderName: HML_WIN_Policy_Semanal_Retencao_31dias
+      folderName: FolderDovCenter
       networks:
         - network: '${resource.Cloud_vSphere_Network_1.id}'
           assignment: static
