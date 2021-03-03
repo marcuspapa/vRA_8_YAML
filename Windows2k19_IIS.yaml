@@ -2,7 +2,7 @@ formatVersion: 1
 inputs:
   nomeVM:
     type: string
-    description: 'Parte do nome é gerado automaticamente (sudvma_mb_nomeEscolhido_###)'
+    description: 'Parte do nome é gerado automaticamente no project (nomeEscolhido_###)'
     title: Nome da VM
   memoriaRAM:
     type: integer
