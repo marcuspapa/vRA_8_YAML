@@ -32,7 +32,7 @@ resources:
       customizationSpec: Windows_2k19_Dominio
       cpuCount: '${input.qtdCPU}'
       totalMemoryMB: '${input.memoriaRAM*1024}'
-      folderName: HML_WIN_Policy_Semanal_Retencao_31dias
+      folderName: vCenterFolderName
       networks:
         - network: '${resource.Cloud_vSphere_Network_1.id}'
           assignment: static
