@@ -1,0 +1,342 @@
+info: |-
+  #
+  # VMware Cloud Assembly Blueprint Sample
+  # 
+name: Big Blueprint (BB)
+version: 8
+#-------------------------INPUTS-------------------------#
+inputs:
+  image:
+    type: string
+    description: Select image
+    default: centos-74-livefire-image
+    title: Image
+    oneOf:
+      - title: CentOS 7.4 (Livefire)
+        const: centos-74-livefire-image
+  flavor:
+    type: string
+    description: |-
+      Select the size of the deployment.
+      Micro = 1 CPU - 1 GB RAM, 
+      Small =  1 CPU - 2 GB RAM, 
+    title: flavor (Size)
+    enum:
+      - micro
+      - small
+    default: small
+  environment:
+    type: string
+    description: 'Select the development, testing, or production environment .'
+    title: Environment
+    oneOf:
+      - title: '* ANY *'
+        const: ''
+      - title: Development
+        const: 'cas.cloud.zone.env:dev'
+      - title: Test
+        const: 'cas.cloud.zone.env:test'
+      - title: Production
+        const: 'cas.cloud.zone.env:prod'
+    default: 'cas.cloud.zone.env:dev'
+  cloudZone:
+    type: string
+    description: Select Public CLoud.
+    default: 'cas.cloud.zone.type:aws'
+    title: Cloud
+    oneOf:
+      - title: '* ANY *'
+        const: ''
+      - title: AWS
+        const: 'cas.cloud.zone.type:aws'
+      - title: Azure
+        const: 'cas.cloud.zone.type:azure'
+  network:
+    type: string
+    description: Select Network to Attach to
+    default: 'cas.network.type:public'
+    title: Network
+    oneOf:
+      - title: '* ANY *'
+        const: ''
+      - title: Public
+        const: 'cas.network.type:public'
+      - title: Private
+        const: 'cas.network.type:private'
+  loadBalancer:
+    type: integer
+    description: Select whatever to deploy an Load Balancer
+    default: 1
+    title: Deploy LB?
+    oneOf:
+      - title: 'Yes'
+        const: 1
+      - title: 'No'
+        const: 0
+  storageTier:
+    type: string
+    description: Select Storage Tier
+    default: 'cas.storage.profile.tier:silver'
+    title: Storage Tier
+    oneOf:
+      - title: '* ANY *'
+        const: ''
+      - title: Silver
+        const: 'cas.storage.profile.tier:silver'
+      - title: Bronze
+        const: 'cas.storage.profile.tier:bronze'
+      - title: Gold
+        const: 'cas.storage.profile.tier:gold'
+      - title: PCI
+        const: 'cas.storage.profile.cap:pci'
+  resourceGroupType:
+    type: string
+    description: |-
+      Select Resource Group Type.
+      On-Demand (Azure) - creates an on-demand security group for each deployment.
+      Predefined (Azure,VMC,vCenter) - uses predefined RG for the deployment Region.
+      Existing (Azure,VMC,vCenter) - Uses existing RG Group. Name must be provided in next field. 
+    default: ondemand
+    title: RG Type
+    oneOf:
+      - title: Predefined
+        const: predefined
+      - title: On-Demand
+        const: ondemand
+      - title: Existing
+        const: existing
+  resourceGroupName:
+    type: string
+    description: |-
+      Enter Existing Resource Group Name. 
+      Allowed characters for cloud agnostic blueprints: 
+      alphanumeric characters, periods, underscores, hyphens and parenthesis.
+      Valid only for Azure, VMC and vCenter deployments.
+    default: ''
+    title: RG Name
+    # resourceGroupName pattern: Matching pattern as per Azure specs: 
+    # Resource group names only allow alphanumeric characters, periods, 
+    # underscores, hyphens and parenthesis and cannot end in a period.
+    # Added "/" and " " to support vCenter folder names
+    pattern: '^[-a-zA-Z0-9/ \(\)\.\_]*$'
+  webCount:
+    type: integer
+    description: Web Frontend Size (Number of nodes)
+    default: 1
+    title: Frontend Size
+    minimum: 0
+    maximum: 10
+  tagsOptional:
+    type: array
+    description: |-
+      Enter tags that will be attached to the provisioned resources.
+      Allowed characters for cloud agnostic blueprints: 
+      Only hyphens (-), underscores (_), lowercase characters, and numbers are allowed.
+    title: Optional Tags
+    # Tag Pattern: Only hyphens (-), underscores (_), lowercase characters, and 
+    # numbers are allowed. Keys must start with a lowercase character. 
+    # International characters are allowed. Pattern is cloud agnostic 
+    pattern: null
+    items:
+      type: object
+      properties:
+        key:
+          type: string
+          title: Key
+          description: 'Only hyphens (-), underscores (_), lowercase characters, and numbers are allowed.'
+        value:
+          type: string
+          title: Value
+          description: 'Only hyphens (-), underscores (_), lowercase characters, and numbers are allowed.'
+  tagsRequired:
+    type: array
+    description: |-
+      Required tags that will be attached to the provisioned resources.
+      Allowed characters for cloud agnostic blueprints: 
+      Only hyphens (-), underscores (_), lowercase characters, and numbers are allowed.
+    default:
+      - value: class-delivery
+        key: cas-resource-desc
+      - value: vra-cloud
+        key: cas-resource-source
+    title: Required Tags
+    # Tag Pattern: Only hyphens (-), underscores (_), lowercase characters, and 
+    # numbers are allowed. Keys must start with a lowercase character. 
+    # International characters are allowed. Pattern is cloud agnostic 
+    pattern: null
+    items:
+      type: object
+      properties:
+        key:
+          type: string
+          title: Key
+          description: 'Only hyphens (-), underscores (_), lowercase characters, and numbers are allowed.'
+        value:
+          type: string
+          title: Value
+          description: 'Only hyphens (-), underscores (_), lowercase characters, and numbers are allowed.'
+    readOnly: true
+  volume1count:
+    type: integer
+    description: Add additional volume
+    default: 0
+    title: '1: Volume Count?'
+    minimum: 0
+    maximum: 20
+  volume1size:
+    type: integer
+    description: Enter Storage Size in GB.
+    default: 50
+    title: '1: Volume Size'
+  volume1storage:
+    type: string
+    description: Select Storage Tier
+    default: 'cas.storage.profile.tier:silver'
+    title: '1: Storage Tier'
+    oneOf:
+      - title: '* ANY *'
+        const: ''
+      - title: Silver
+        const: 'cas.storage.profile.tier:silver'
+      - title: Bronze
+        const: 'cas.storage.profile.tier:bronze'
+      - title: Gold
+        const: 'cas.storage.profile.tier:gold'
+      - title: PCI
+        const: 'cas.storage.profile.cap:pci'
+  volume2count:
+    type: integer
+    description: Add additional volume
+    default: 0
+    title: '2: Volume Count?'
+    minimum: 0
+    maximum: 20
+  volume2size:
+    type: integer
+    description: Enter Storage Size in GB.
+    default: 100
+    title: '2: Volume Size'
+  volume2storage:
+    type: string
+    description: Select Storage Tier
+    default: 'cas.storage.profile.tier:silver'
+    title: '2: Storage Tier'
+    oneOf:
+      - title: '* ANY *'
+        const: ''
+      - title: Silver
+        const: 'cas.storage.profile.tier:silver'
+      - title: Bronze
+        const: 'cas.storage.profile.tier:bronze'
+      - title: Gold
+        const: 'cas.storage.profile.tier:gold'
+      - title: PCI
+        const: 'cas.storage.profile.cap:pci'
+#------------------------RESOURCES-----------------------#
+resources:
+  app-net:
+    type: Cloud.Network
+    properties:
+      #-----------------CUSTOM PROPERTIES----------------#
+      #--------------------------------------------------#
+      name: net-tito-web
+      networkType: existing
+      constraints:
+        - tag: '${input.network}'
+  applb:
+    type: Cloud.LoadBalancer
+    properties:
+      # Do not deploy LB if cloud account is VMC or vSphere. VMC Does not support a LB deployment. 
+      name: lb-tito-web
+      routes:
+        - protocol: HTTP
+          port: '80'
+          instanceProtocol: HTTP
+          instancePort: '80'
+      network: '${resource["app-net"].name}'
+      instances: '${resource["web-tier"][*].id}'
+      internetFacing: true
+  web-tier:
+    type: Cloud.Machine
+    dependsOn:
+      - db-tier
+    properties:
+      constraints:
+        - tag: '${input.cloudZone}'
+        - tag: '${input.environment}'
+      name: vm-tito-web
+      flavor: '${input.flavor}'
+      image: '${input.image}'
+      networks:
+        - name: '${resource["app-net"].name}'
+          network: '${resource["app-net"].id}'
+      storage:
+        disks:
+          - capacityGb: 4
+        constraints:
+          - tag: '${input.storageTier}'
+      remoteAccess:
+        authentication: publicPrivateKey
+        sshKey: SpasAndMarcAreGreatPleaseGiveThemAGoodSurvaySSHKey
+      cloudConfig: |
+        #cloud-config
+        repo_update: true
+        repo_upgrade: all
+        packages:
+          - git
+        runcmd:
+          - sudo -s
+          - cd /tmp
+          - git clone http://gitlab.elasticskyholdings.com/class-delivery/tito.git
+          - cd tito/asset/Deployment/CloudAssembly/titodb/
+          - chmod u+x *.sh
+          - bash tito_as.sh ${resource["db-tier"].address}
+      count: '${input.webCount}'
+  db-tier:
+    type: Cloud.Machine
+    properties:
+      constraints:
+        - tag: '${input.cloudZone}'
+        - tag: '${input.environment}'
+      name: vm-tito-db
+      flavor: '${input.flavor}'
+      image: '${input.image}'
+      storage:
+        disks:
+          - capacityGb: 4
+        constraints:
+          - tag: '${input.storageTier}'
+      networks:
+        - network: '${resource["app-net"].id}'
+      remoteAccess:
+        authentication: publicPrivateKey
+        sshKey: SpasAndMarcAreGreatPleaseGiveThemAGoodSurvaySSHKey
+      cloudConfig: |
+        #cloud-config 
+        repo_update: true
+        repo_upgrade: all
+        packages:
+          - git
+          - mariadb-server
+        runcmd:
+          - sudo -s
+          - cd /tmp
+          - cd /tmp
+          - git clone http://gitlab.elasticskyholdings.com/class-delivery/tito.git
+          - cd tito/asset/Deployment/CloudAssembly/titodb/
+          - chmod u+x *.sh
+          - bash tito_db.sh
+  volume1:
+    type: Cloud.Volume
+    properties:
+      count: '${input.volume1count}'
+      capacityGb: '${input.volume1size}'
+      constraints:
+        - tag: '${input.volume1storage}'
+  volume2:
+    type: Cloud.Volume
+    properties:
+      count: '${input.volume2count}'
+      capacityGb: '${input.volume2size}'
+      constraints:
+        - tag: '${input.volume2storage}'
