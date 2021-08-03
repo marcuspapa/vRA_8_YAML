@@ -31,7 +31,7 @@ resources:
       name: '${input.Nome}'
       cpuCount: '${input.CPU}'
       totalMemoryMB: '${input.Memoria*1024}'
-      folderName: HML_WIN_Policy_Semanal_Retencao_31dias
+      folderName: vCenter Folder
       networks:
         - network: '${resource.Cloud_vSphere_Network_1.id}'
           assignment: static
