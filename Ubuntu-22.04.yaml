@@ -1,0 +1,96 @@
+formatVersion: 1
+inputs:
+  Memory:
+    type: integer
+    title: Memory
+    default: 1
+    minimum: 1
+    maximum: 4
+    enum:
+      - 1
+      - 2
+      - 4
+  CPU:
+    type: integer
+    title: CPU
+    default: 1
+    minimum: 1
+    maximum: 8
+    enum:
+      - 1
+      - 2
+      - 4
+      - 8
+  Hostname:
+    type: string
+    title: Hostname
+    minLength: 3
+    maxLength: 15
+  userconsolepassword:
+    type: string
+    title: 'Senha userconsole:'
+    description: Senha do usuário userconsole para acesso via console
+    minLength: 6
+    maxLength: 10
+    encrypted: true
+  publickey:
+    type: string
+    title: Insira a chave publica
+    minLength: 10
+  ipclient:
+    type: string
+    title: 'IPv4 de origem:'
+    description: Informa o IPv4 que será utilizado para acessar a VM
+    minLength: 10
+    maxLength: 13
+resources:
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: net:SERVER_CLOUD
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 1
+    properties:
+      image: Ubuntu-22.04
+      cpuCount: ${input.CPU}
+      totalMemoryMB: ${input.Memory*1024}
+      networks:
+        - network: ${resource.Cloud_vSphere_Network_1.id}
+          assignment: static
+          assignIPv6Address: true
+      cloudConfigSettings:
+        deploymentFailOnCloudConfigRuntimeError: true
+      cloudConfig: |
+        #cloud-config
+        chpasswd:
+          list: |
+            userconsole:${input.userconsolepassword}
+          expire: false
+        users:
+          - default
+          - name: userconsole
+            lock_passwd: false
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: [wheel, sudo, admin]
+            shell: '/bin/bash'
+        runcmd:
+          - sudo echo "Defaults:userconsole  !requiretty" >> /etc/sudoers.d/userconsole
+          - sudo echo "${input.publickey}" >> /root/.ssh/authorized_keys
+          - sudo sed -i -e 's/${resource.Cloud_vSphere_Machine_1.resourceName}/${input.Hostname}/g' /etc/hosts
+          - sudo sed -i -e 's/enderecoIP/${resource.Cloud_vSphere_Machine_1.networks.address[0]}/g' /etc/init.d/firewall
+          - sudo sed -i -e 's/ipclient/${input.ipclient}/g' /etc/init.d/firewall
+          - sudo /etc/init.d/firewall restart
+          - export ip6=`ip addr | grep 2801:88 | awk '{print $2}' | cut -d"/" -f1`
+          - sudo sed -i -e "s/enderecoIP/$ip6/g" /etc/init.d/firewallv6
+          - sudo /etc/init.d/firewallv6 restart
+        hostname: ${input.Hostname}
